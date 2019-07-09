@@ -6,7 +6,10 @@ namespace LicencingNET
 {
     internal static class NTP
     {
+        // Address to NTP server
         private const string ntpServer = "pool.ntp.org";
+        // Offset to get to the "Transmit Timestamp" field (time at which the reply departed the server for the client, in 64-bit timestamp format.)
+        private const byte serverTimeOffset = 40;
 
         internal static DateTime GetNetworkTime()
         {
@@ -16,6 +19,7 @@ namespace LicencingNET
             // Setting the Leap Indicator, Version Number and Mode values
             ntpData[0] = 0x1B; //LI = 0 (no warning), VN = 3 (IPv4 only), Mode = 3 (Client Mode)
 
+            // Resolve NTP address
             IPAddress[] addresses = Dns.GetHostEntry(ntpServer).AddressList;
 
             // The UDP port number assigned to NTP is 123
@@ -26,43 +30,29 @@ namespace LicencingNET
             {
                 socket.Connect(endPoint);
 
-                //Stops code hang if NTP is blocked
+                // Stops code hang if NTP is blocked
                 socket.ReceiveTimeout = 3000;
                 socket.SendTimeout = 3000;
 
-                socket.Send(ntpData);
+                // Sends NTP request
+                socket.SendTo(ntpData, endPoint);
+
+                // Waits for NTP response
                 socket.Receive(ntpData);
-                socket.Close();
             }
 
-            // Offset to get to the "Transmit Timestamp" field (time at which the reply departed the server for the client, in 64-bit timestamp format.)
-            const byte serverReplyTime = 40;
+            // Seconds part (fixes endianess)
+            ulong intPart = (ulong)ntpData[serverTimeOffset] << 24 | (ulong)ntpData[serverTimeOffset + 1] << 16 | (ulong)ntpData[serverTimeOffset + 2] << 8 | (ulong)ntpData[serverTimeOffset + 3];
+            // Seconds fraction (fixes endianess)
+            ulong fractPart = (ulong)ntpData[serverTimeOffset + 4] << 24 | (ulong)ntpData[serverTimeOffset + 5] << 16 | (ulong)ntpData[serverTimeOffset + 6] << 8 | (ulong)ntpData[serverTimeOffset + 7];
 
-            // Get the seconds part
-            ulong intPart = BitConverter.ToUInt32(ntpData, serverReplyTime);
-
-            // Get the seconds fraction
-            ulong fractPart = BitConverter.ToUInt32(ntpData, serverReplyTime + 4);
-
-            // Convert From big-endian to little-endian
-            intPart = SwapEndianness(intPart);
-            fractPart = SwapEndianness(fractPart);
-
+            // Milliseconds offset
             ulong milliseconds = (intPart * 1000) + ((fractPart * 1000) / 0x100000000L);
 
             // **UTC** time
             DateTime networkDateTime = (new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddMilliseconds((long)milliseconds);
 
-            return networkDateTime.ToUniversalTime();
-        }
-
-        // stackoverflow.com/a/3294698/162671
-        private static uint SwapEndianness(ulong x)
-        {
-            return (uint)(((x & 0x000000ff) << 24) +
-                           ((x & 0x0000ff00) << 8) +
-                           ((x & 0x00ff0000) >> 8) +
-                           ((x & 0xff000000) >> 24));
+            return networkDateTime.ToLocalTime();
         }
     }
 }
