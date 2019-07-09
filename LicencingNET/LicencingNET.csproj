@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <LangVersion>7.1</LangVersion>
+<TargetFrameworks>net35;net45;net471;netcoreapp2.0;netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+</Project>
