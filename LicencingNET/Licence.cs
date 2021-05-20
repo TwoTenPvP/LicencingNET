@@ -158,7 +158,7 @@ namespace LicencingNET
                 return ValidationResult.NotStarted;
             }
 
-            using (SHA512CryptoServiceProvider sha = new SHA512CryptoServiceProvider())
+            using (SHA512 sha = SHA512.Create())
             {
                 byte[] licenceBinary = ToBinary(false);
 
@@ -209,7 +209,7 @@ namespace LicencingNET
                 throw new ArgumentNullException(nameof(privateKey), "Private key cannot be null");
             }
 
-            using (SHA512CryptoServiceProvider sha = new SHA512CryptoServiceProvider())
+            using (SHA512 sha = SHA512.Create())
             {
                 byte[] licenceBinary = ToBinary(false);
 
