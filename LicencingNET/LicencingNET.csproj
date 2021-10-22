@@ -2,5 +2,18 @@
   <PropertyGroup>
     <LangVersion>7.1</LangVersion>
     <TargetFrameworks>net35;net45;net471;netcoreapp3.1;netstandard2.0</TargetFrameworks>
+    <PackageLicenseFile>LICENCE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/RemoteCloud/LicencingNET</RepositoryUrl>
+    <Copyright>MIT Licence</Copyright>
+    <PackageProjectUrl>https://github.com/TwoTenPvP/LicencingNET</PackageProjectUrl>
+    <Description>Fork of LicencingNET project with the intention of building a NuGet package.</Description>
+    <PackageId>Maranics.LicencingNET</PackageId>
+    <PackageReleaseNotes>Contains pull request 2 modifications to be compatible with NET Framework 3.5</PackageReleaseNotes>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\LICENCE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 </Project>
