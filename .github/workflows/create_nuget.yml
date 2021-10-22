@@ -1,0 +1,36 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish_to_nuget:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./LicencingNET
+        
+    name: Update NuGet 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+ 
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0'
+          source-url: https://nuget.pkg.github.com/RemoteCloud/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+              
+      - name: Build source
+        run: dotnet build --configuration Release
+        
+      - name: Create package
+        run: dotnet pack LicencingNET.csproj --output nuget-package --configuration Release
+        
+        # --no-symbols true is a bug workaround. In the future --no-symbols should just work
+      - name: Push to GitHub registry
+        run: dotnet nuget push ./nuget-package/*.nupkg --skip-duplicate --no-symbols true --api-key ${{ secrets.GITHUB_TOKEN }}
